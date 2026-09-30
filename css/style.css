@@ -184,14 +184,14 @@ button, input { font-family: inherit; }
 .chapter {
   position: relative;
   z-index: 1;
-  min-height: 210vh;
+  min-height: 148vh;
 }
 
-.chapter--origin { min-height: 250vh; }
+.chapter--origin { min-height: 168vh; }
 .chapter--panel,
-.chapter--savings,
-.chapter--why { min-height: 240vh; }
-.chapter--projects { min-height: 320vh; }
+.chapter--why { min-height: 156vh; }
+.chapter--savings { min-height: 188vh; }
+.chapter--projects { min-height: 250vh; }
 .chapter--fit { min-height: 100vh; }
 
 .copy {
@@ -433,7 +433,7 @@ h2 { font-size: clamp(42px, 5.6vw, 84px); }
   will-change: transform;
 }
 
-.project { flex: 0 0 auto; width: min(74vw, 1040px); }
+.project { flex: 0 0 auto; width: min(74vw, 1040px); transform-origin: center center; }
 
 .project img {
   display: block;
@@ -717,10 +717,11 @@ h2 { font-size: clamp(42px, 5.6vw, 84px); }
 body.nav-open { overflow: hidden; }
 
 @media (max-width: 860px) {
-  .chapter { min-height: 170vh; }
-  .chapter--origin { min-height: 200vh; }
-  .chapter--projects { min-height: 240vh; }
-  .chapter--why { min-height: 200vh; }
+  .chapter { min-height: 128vh; }
+  .chapter--origin { min-height: 148vh; }
+  .chapter--projects { min-height: 190vh; }
+  .chapter--why { min-height: 142vh; }
+  .chapter--savings { min-height: 176vh; }
 
   h1 { font-size: clamp(46px, 13vw, 72px); }
   h2, .echo { font-size: clamp(34px, 9vw, 56px); }
