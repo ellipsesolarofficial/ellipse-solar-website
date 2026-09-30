@@ -810,6 +810,19 @@
     return best;
   }
 
+  function markNav() {
+    const order = ["solutions", "projects", "why", "contact"];
+    let current = null;
+    order.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top <= window.innerHeight * 0.45) current = id;
+    });
+    menu.querySelectorAll("[data-nav]").forEach((link) => {
+      if (link.getAttribute("data-nav") === current) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    });
+  }
+
   function textOpacity(scene, t) {
     if (scene === "drift" || scene === "projects") return 1;
     if (scene === "origin") return t < 0.9 ? 1 : clamp((1 - t) / 0.1, 0, 1);
@@ -866,9 +879,9 @@
 
     const why = layout.find((item) => item.scene === "why");
     const statements = document.querySelectorAll("#statements .statement");
+    const nearest = Math.round(clamp(why.t, 0, 1) * (statements.length - 1));
     statements.forEach((el, index) => {
-      const x = why.t * (statements.length - 1);
-      el.style.opacity = String(clamp(1 - Math.abs(x - index) * 1.35, 0, 1));
+      el.style.opacity = index === nearest ? "1" : "0";
     });
 
     const projects = layout.find((item) => item.scene === "projects");
@@ -880,6 +893,7 @@
     }
 
     nav.classList.toggle("is-solid", window.scrollY > 24 || activeIndex > 0);
+    markNav();
   }
 
   function renderParticles(sceneA, tA, sceneB, tB, blend) {
@@ -942,19 +956,23 @@
 
   function filmLayout() {
     const wide = !narrow();
-    const pw = w * (wide ? 0.46 : 0.8);
+    const pw = w * (wide ? 0.42 : 0.7);
     const ph = pw * 0.56;
-    const px = (wide ? w * 0.62 : w * 0.5) - pw / 2;
-    const py = (wide ? h * 0.4 : h * 0.3) - ph / 2;
-    const hw = w * (wide ? 0.32 : 0.58);
+    const px = (wide ? w * 0.68 : w * 0.5) - pw / 2;
+    const ceiling = h * (wide ? 0.52 : 0.42);
+    let py = h * (wide ? 0.16 : 0.1);
+    if (py + ph > ceiling) py = Math.max(h * 0.06, ceiling - ph);
+    const hw = w * (wide ? 0.24 : 0.42);
     const hh = hw * 0.72;
+    let hy = h * (wide ? 0.12 : 0.07);
+    if (hy + hh > ceiling) hy = Math.max(h * 0.05, ceiling - hh);
     return {
-      sun: { x: w * (wide ? 0.58 : 0.5), y: h * (wide ? 0.36 : 0.3) },
-      sunR: Math.min(w, h) * (wide ? 0.22 : 0.17),
+      sun: { x: w * (wide ? 0.58 : 0.5), y: h * (wide ? 0.32 : 0.24) },
+      sunR: Math.min(w, h) * (wide ? 0.2 : 0.15),
       panel: { x: px, y: py, w: pw, h: ph },
       house: {
-        x: wide ? w * 0.045 : (w - hw) / 2,
-        y: wide ? h * 0.18 : h * 0.1,
+        x: wide ? w * 0.08 : (w - hw) / 2,
+        y: hy,
         w: hw,
         h: hh
       }
@@ -1261,7 +1279,14 @@
       node.style.opacity = String(opacity);
       node.style.visibility = opacity <= 0 ? "hidden" : "visible";
     });
-    const homeT = clamp((p - 0.5) / 0.28, 0, 1);
+    document.querySelectorAll("#services li").forEach((li, index) => {
+      li.classList.toggle("is-hot", p >= 0.38 + index * 0.03 && p <= 0.51);
+    });
+    document.querySelectorAll("#grid-chain span").forEach((span, index) => {
+      if (index % 2 === 1) return;
+      span.classList.toggle("is-hot", p >= 0.76 + (index / 2) * 0.05);
+    });
+    const homeT = clamp((p - 0.54) / 0.16, 0, 1);
     const amount = 8450 * (1 - smooth(homeT));
     const meter = document.getElementById("meter");
     const value = document.getElementById("meter-value");
@@ -1386,59 +1411,175 @@
     return 78000;
   }
 
+  function formatINR(n) {
+    return "₹" + Math.round(n).toLocaleString("en-IN");
+  }
+
   function formatUnits(n) {
     return Math.round(n).toLocaleString("en-IN");
   }
 
-  function calculateSavings() {
-    const bill = Math.min(100000, Math.max(500, parseInt(calcBill.value, 10) || 3000));
-    const freeUnits = document.querySelector('input[name="free-units"]:checked').value === "yes";
+  function clampedBill() {
+    const raw = parseInt(calcBill.value, 10);
+    return Math.min(100000, Math.max(500, Number.isNaN(raw) ? 3000 : raw));
+  }
+
+  function sizeFor(bill, freeUnits) {
     const monthlyUnits = unitsFromBill(bill, freeUnits);
-    const dailyUnits = Math.round((monthlyUnits / 30) * 10) / 10;
+    const dailyUnits = monthlyUnits / 30;
     const exactKW = dailyUnits / unitsPerKWPerDay;
     const roundedKW = Math.min(50, Math.max(3, Math.ceil(exactKW)));
-    const annualGeneration = Math.round(roundedKW * unitsPerKWPerDay * 365);
-    document.getElementById("res-system").textContent = roundedKW + " kW";
-    document.getElementById("res-annual").textContent = formatUnits(annualGeneration) + " units";
-    document.getElementById("res-subsidy").textContent = "₹" + centerSubsidy(roundedKW).toLocaleString("en-IN");
-    const note = document.getElementById("res-note");
-    if (exactKW > 50) {
-      note.textContent = "This bill is above a 50 kW system, the largest standard size we quote. Anything larger is designed after a site survey. Central subsidy applies to eligible residential DCR systems.";
-    } else {
-      note.textContent = "Standard sizes run from 3 kW to 50 kW. Central subsidy applies to eligible residential DCR systems. A site survey fixes brand, phase, and final price.";
+    return { exactKW, roundedKW, annual: Math.round(roundedKW * unitsPerKWPerDay * 365) };
+  }
+
+  function chipValue(bill) {
+    if (bill < 1500) return "Less than ₹1500";
+    if (bill < 2500) return "₹1500 - ₹2500";
+    if (bill < 4000) return "₹2500 - ₹4000";
+    if (bill <= 8000) return "₹4000 - ₹8000";
+    return "More than ₹8000";
+  }
+
+  function selectChip(bill) {
+    const input = document.querySelector('input[name="bill"][value="' + chipValue(bill) + '"]');
+    if (input) input.checked = true;
+  }
+
+  function calculateSavings() {
+    const typed = parseInt(calcBill.value, 10);
+    const bill = clampedBill();
+    const freeUnits = document.querySelector('input[name="free-units"]:checked').value === "yes";
+    const sized = sizeFor(bill, freeUnits);
+    const other = sizeFor(bill, !freeUnits);
+    document.getElementById("res-system").textContent = sized.roundedKW + " kW";
+    document.getElementById("res-annual").textContent = formatUnits(sized.annual) + " units";
+    document.getElementById("res-subsidy").textContent = formatINR(centerSubsidy(sized.roundedKW));
+    const parts = [];
+    if (!Number.isNaN(typed) && typed !== bill) {
+      parts.push("This estimate uses " + formatINR(bill) + ", the nearest bill we size.");
     }
-    lastEstimate = { kw: roundedKW, annual: annualGeneration, bill: bill };
+    if (sized.roundedKW === 3 && sized.exactKW < 3) {
+      parts.push("This bill is below a 3 kW system, so 3 kW is the smallest size we quote.");
+    }
+    if (freeUnits && sized.roundedKW === other.roundedKW) {
+      parts.push("The free 100 units do not change the size at this bill, because 3 kW is the smallest system.");
+    } else if (freeUnits) {
+      parts.push("Treating 100 units as free means this rupee bill covers more units, so the suggested system is larger.");
+    }
+    if (sized.exactKW > 50) {
+      parts.push("This bill is above a 50 kW system, the largest standard size we quote. Anything larger is designed after a site survey.");
+    }
+    parts.push("Central subsidy is for eligible homes that use India-made (DCR) panels. State subsidy, up to ₹17,000, is confirmed only where that scheme applies. A site survey fixes brand, phase, and price.");
+    document.getElementById("res-note").textContent = parts.join(" ");
+    lastEstimate = { kw: sized.roundedKW, annual: sized.annual, bill: bill };
   }
 
   function publishEstimate() {
     calculateSavings();
     const estimate = document.getElementById("estimate");
     if (estimate && lastEstimate) {
-      estimate.textContent = "Estimated from your bill: " + lastEstimate.kw + " kW · " + formatUnits(lastEstimate.annual) + " units a year.";
+      estimate.textContent = "Estimated from " + formatINR(lastEstimate.bill) + ": " + lastEstimate.kw + " kW · " + formatUnits(lastEstimate.annual) + " units a year.";
     }
   }
 
+  function syncSlider(bill) {
+    calcSlider.value = String(Math.min(parseInt(calcSlider.max, 10), Math.max(parseInt(calcSlider.min, 10), bill)));
+  }
+
+  calcSlider.max = "100000";
   calcSlider.addEventListener("input", () => {
     calcBill.value = calcSlider.value;
+    selectChip(parseInt(calcBill.value, 10));
     publishEstimate();
   });
   calcBill.addEventListener("input", () => {
     const value = parseInt(calcBill.value, 10);
-    if (!Number.isNaN(value)) {
-      calcSlider.value = String(Math.min(parseInt(calcSlider.max, 10), Math.max(parseInt(calcSlider.min, 10), value)));
-    }
+    if (!Number.isNaN(value)) syncSlider(value);
+    publishEstimate();
+  });
+  calcBill.addEventListener("blur", () => {
+    const bill = clampedBill();
+    calcBill.value = String(bill);
+    syncSlider(bill);
+    selectChip(bill);
     publishEstimate();
   });
   document.querySelectorAll('input[name="free-units"]').forEach((input) => {
     input.addEventListener("change", publishEstimate);
   });
+  const chipBills = {
+    "Less than ₹1500": 1200,
+    "₹1500 - ₹2500": 2000,
+    "₹2500 - ₹4000": 3200,
+    "₹4000 - ₹8000": 6000,
+    "More than ₹8000": 12000
+  };
+  document.querySelectorAll('input[name="bill"]').forEach((input) => {
+    input.addEventListener("change", () => {
+      const bill = chipBills[input.value];
+      if (!bill) return;
+      calcBill.value = String(bill);
+      syncSlider(bill);
+      publishEstimate();
+    });
+  });
+
+  function showError(id, message) {
+    const el = document.getElementById(id);
+    const field = document.getElementById(id.replace("-error", ""));
+    if (!el) return;
+    el.hidden = !message;
+    el.textContent = message || "";
+    if (field) field.setAttribute("aria-invalid", message ? "true" : "false");
+  }
+
+  function phoneDigits(value) {
+    let digits = value.replace(/\D/g, "");
+    if (digits.length === 12 && digits.startsWith("91")) digits = digits.slice(2);
+    if (digits.length === 11 && digits.startsWith("0")) digits = digits.slice(1);
+    return digits;
+  }
 
   document.getElementById("contact-form").addEventListener("submit", (event) => {
     event.preventDefault();
     const form = event.target;
-    const size = lastEstimate ? "\nEstimated system: " + lastEstimate.kw + " kW" : "";
-    const message = "Hi Ellipse Solar,\n\nI am interested in solar installation.\n\nName: " + form.name.value + "\nWhatsApp: " + form.phone.value + "\nPincode: " + form.pincode.value + "\nMonthly Bill: " + form.bill.value + size + "\n\nPlease share details and a quote.";
-    window.open("https://wa.me/919216054155?text=" + encodeURIComponent(message), "_blank", "noopener");
+    const phone = phoneDigits(form.phone.value);
+    const pin = form.pincode.value.replace(/\D/g, "");
+    const name = form.name.value.trim();
+    let firstInvalid = null;
+    if (!name) {
+      showError("name-error", "Enter your name so we know who to reply to.");
+      firstInvalid = firstInvalid || form.name;
+    } else showError("name-error", "");
+    if (phone.length !== 10) {
+      showError("phone-error", "Enter a 10-digit WhatsApp number. +91 is optional.");
+      firstInvalid = firstInvalid || form.phone;
+    } else showError("phone-error", "");
+    if (!/^[1-9][0-9]{5}$/.test(pin)) {
+      showError("pincode-error", "Enter the 6-digit pincode for the property.");
+      firstInvalid = firstInvalid || form.pincode;
+    } else showError("pincode-error", "");
+    if (!form.terms.checked) {
+      showError("terms-error", "Agree to the Terms to send this note.");
+      firstInvalid = firstInvalid || form.terms;
+    } else showError("terms-error", "");
+    if (firstInvalid) {
+      firstInvalid.focus();
+      return;
+    }
+    form.phone.value = phone;
+    form.pincode.value = pin;
+    const message = "Hi Ellipse Solar,\n\nI am interested in solar installation.\n\nName: " + name + "\nWhatsApp: " + phone + "\nPincode: " + pin + "\nMonthly bill: " + formatINR(lastEstimate.bill) + "\nEstimated system: " + lastEstimate.kw + " kW\n\nPlease share details and a quote.";
+    const popup = window.open("https://wa.me/919216054155?text=" + encodeURIComponent(message), "_blank", "noopener");
+    const status = document.getElementById("form-status");
+    const submit = document.getElementById("consult-submit");
+    status.hidden = false;
+    if (popup) {
+      submit.hidden = true;
+      status.textContent = "WhatsApp opened with your note.";
+    } else {
+      status.textContent = "WhatsApp did not open. Message +91 92160 54155 and we will reply there.";
+    }
   });
 
   document.querySelectorAll('a[href^="#"]').forEach((link) => {
@@ -1453,7 +1594,8 @@
   });
 
   resize();
-  calculateSavings();
+  selectChip(clampedBill());
+  publishEstimate();
   window.addEventListener("resize", resize);
   requestAnimationFrame(frame);
 })();

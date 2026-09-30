@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=logo">
+  <link rel="stylesheet" href="css/style.css?v=flows2">
 </head>
 <body>
   <a class="skip" href="#origin">Skip to content</a>
@@ -26,22 +26,22 @@
       <span></span><span></span>
     </button>
     <nav class="nav__links" id="nav-menu">
-      <a href="#home">Solutions</a>
-      <a href="#projects">Projects</a>
-      <a href="#why">About</a>
-      <a href="#contact">Contact</a>
-      <a class="btn btn--fill" href="#contact">Get solar</a>
+      <a href="#solutions" data-nav="solutions">Solutions</a>
+      <a href="#projects" data-nav="projects">Projects</a>
+      <a href="#why" data-nav="why">About</a>
+      <a href="#contact" data-nav="contact">Contact</a>
+      <a class="btn btn--fill" href="#contact">Get a solar consultation</a>
     </nav>
   </header>
 
   <main>
     <section class="film" id="film">
       <div id="origin" class="film__mark" style="top:0"></div>
-      <div id="panel" class="film__mark" style="top:22%"></div>
-      <div id="home" class="film__mark" style="top:46%"></div>
-      <div id="grid" class="film__mark" style="top:70%"></div>
+      <div id="panel" class="film__mark" style="top:18%"></div>
+      <div id="solutions" class="film__mark" style="top:36%"></div>
+      <div id="grid" class="film__mark" style="top:74%"></div>
       <div class="film__stage">
-        <div class="beat beat--center" data-start="0" data-end="0.16">
+        <div class="beat beat--center" data-start="0" data-end="0.15">
           <h1>Power with<br>purpose</h1>
           <p class="lede">Turning sunlight into smarter energy.</p>
           <div class="actions">
@@ -49,25 +49,22 @@
             <a class="btn btn--ghost" href="#contact">Get a solar consultation</a>
           </div>
         </div>
-        <div class="beat" data-start="0.18" data-end="0.40">
+        <div class="beat" data-start="0.18" data-end="0.33">
           <h2>Capture the power of sunlight.</h2>
           <p class="lede">High-performance solar systems designed around your actual energy requirements.</p>
         </div>
-        <div class="beat" data-start="0.36" data-end="0.50">
-          <p class="label">DC power generated</p>
-        </div>
-        <div class="beat" data-start="0.48" data-end="0.74">
+        <div class="beat" data-start="0.36" data-end="0.51">
           <h2>Sunlight. Now powering your home.</h2>
           <p class="lede">Generate your own electricity and reduce your dependence on the grid.</p>
           <ul class="service-line" id="services">
-            <li class="is-hot">Solar solutions</li>
-            <li class="is-hot">Installation</li>
-            <li class="is-hot">Consultation</li>
-            <li class="is-hot">Maintenance</li>
+            <li>Solar solutions</li>
+            <li>Installation</li>
+            <li>Consultation</li>
+            <li>Maintenance</li>
           </ul>
         </div>
-        <div class="meter" id="meter" data-start="0.50" data-end="0.82">
-          <p class="label">Monthly electricity bill</p>
+        <div class="meter" id="meter" data-start="0.54" data-end="0.71">
+          <p class="meter__kicker">Monthly electricity bill</p>
           <p class="meter__value" id="meter-value" aria-live="polite">₹8,450</p>
           <p class="lede meter__line">Imagine producing as much energy as you consume.</p>
           <p class="fine">Illustrative example. Actual savings depend on system size, consumption, tariff, generation and applicable net-metering rules.</p>
@@ -75,13 +72,13 @@
         <div class="beat" data-start="0.74" data-end="1">
           <h2>Use what you need. Send the rest forward.</h2>
           <p class="chain" id="grid-chain">
-            <span class="is-hot">Sun</span>
+            <span>Sun</span>
             <span aria-hidden="true">↓</span>
-            <span class="is-hot">Solar panels</span>
+            <span>Solar panels</span>
             <span aria-hidden="true">↓</span>
-            <span class="is-hot">Home</span>
+            <span>Home</span>
             <span aria-hidden="true">↔</span>
-            <span class="is-hot">Grid</span>
+            <span>Grid</span>
           </p>
         </div>
       </div>
@@ -89,9 +86,8 @@
 
     <section class="chapter chapter--savings" id="savings" data-scene="savings">
       <div class="copy">
-        <p class="label">Savings</p>
         <h2>Turn sunlight into long-term savings.</h2>
-        <p class="lede">Lower electricity bills, less dependence on the grid, and a system life measured in decades. Eligible residential DCR systems can receive a central subsidy of ₹78,000 from 3 kW, and up to ₹17,000 in state subsidy where that scheme applies.</p>
+        <p class="lede">Lower electricity bills, with less dependence on the grid. The figures below are an estimate from the bill you enter.</p>
         <div class="calc" id="savings-calc">
           <label class="calc__label" for="calc-bill">Monthly electricity bill</label>
           <div class="calc__row">
@@ -108,23 +104,23 @@
             <div><dt>System size</dt><dd id="res-system">3 kW</dd></div>
             <div><dt>Annual generation</dt><dd id="res-annual">5,639 units</dd></div>
             <div><dt>Central subsidy</dt><dd id="res-subsidy">₹78,000</dd></div>
+            <div><dt>State subsidy</dt><dd id="res-state">Up to ₹17,000 if this home qualifies</dd></div>
           </dl>
-          <p class="fine" id="res-note">Standard sizes run from 3 kW to 50 kW. Central subsidy applies to eligible residential DCR systems. A site survey fixes brand, phase, and final price.</p>
-          <a class="btn btn--fill" href="#contact">Calculate my solar savings</a>
+          <p class="fine" id="res-note">Standard sizes run from 3 kW to 50 kW. Central subsidy is for eligible homes that use India-made (DCR) panels. A site survey fixes brand, phase, and price.</p>
+          <a class="btn btn--fill" href="#contact">Send this estimate</a>
         </div>
       </div>
     </section>
 
     <section class="chapter chapter--process" id="process" data-scene="process">
       <div class="copy">
-        <p class="label">Ellipse Solar</p>
         <h2>Solar, handled end to end.</h2>
         <p class="lede">The path you just followed is the work itself — one system, carried from the first conversation through the life of the installation.</p>
         <ol class="rail" id="rail">
           <li>Consult</li>
           <li>Design</li>
           <li>Install</li>
-          <li>Commission</li>
+          <li>Switch on</li>
           <li>Monitor</li>
           <li>Maintain</li>
         </ol>
@@ -133,7 +129,7 @@
 
     <section class="chapter chapter--projects" id="projects" data-scene="projects">
       <div class="pin">
-        <p class="label pin__label">Installations</p>
+        <h2 class="pin__title">Installations</h2>
         <div class="track" id="track">
           <figure class="project">
             <img src="images/project-residential.jpg" width="1280" height="720" alt="Residential rooftop solar array at dusk" loading="lazy" decoding="async">
@@ -162,7 +158,6 @@
 
     <section class="chapter chapter--why" id="why" data-scene="why">
       <div class="copy">
-        <p class="label">Why Ellipse Solar</p>
         <h2>Engineering before installation.</h2>
         <div class="statements" id="statements">
           <p class="statement">System design based on actual requirements.</p>
@@ -188,22 +183,24 @@
 
     <section class="chapter chapter--fit" id="contact" data-scene="drift">
       <div class="copy">
-        <p class="label">Consultation</p>
         <h2>Tell us about the property.</h2>
         <p class="lede">A short note is enough. We reply on WhatsApp with the next step for a site survey.</p>
         <p class="estimate" id="estimate" aria-live="polite"></p>
-        <form class="form" id="contact-form">
+        <form class="form" id="contact-form" novalidate>
           <label for="name">Name</label>
-          <input type="text" id="name" name="name" autocomplete="name" required>
+          <input type="text" id="name" name="name" autocomplete="name" required aria-describedby="name-error">
+          <p class="field-error" id="name-error" hidden></p>
           <label for="phone">WhatsApp number</label>
-          <input type="tel" id="phone" name="phone" autocomplete="tel" required>
+          <input type="tel" id="phone" name="phone" inputmode="tel" autocomplete="tel" required aria-describedby="phone-error">
+          <p class="field-error" id="phone-error" hidden></p>
           <label for="pincode">Pincode</label>
-          <input type="text" id="pincode" name="pincode" inputmode="numeric" autocomplete="postal-code" required>
+          <input type="text" id="pincode" name="pincode" inputmode="numeric" autocomplete="postal-code" required maxlength="6" aria-describedby="pincode-error">
+          <p class="field-error" id="pincode-error" hidden></p>
           <label>Monthly electricity bill</label>
           <div class="bills">
-            <label><input type="radio" name="bill" value="Less than ₹1500" required><span>Under ₹1,500</span></label>
+            <label><input type="radio" name="bill" value="Less than ₹1500"><span>Under ₹1,500</span></label>
             <label><input type="radio" name="bill" value="₹1500 - ₹2500"><span>₹1,500 – ₹2,500</span></label>
-            <label><input type="radio" name="bill" value="₹2500 - ₹4000"><span>₹2,500 – ₹4,000</span></label>
+            <label><input type="radio" name="bill" value="₹2500 - ₹4000" checked><span>₹2,500 – ₹4,000</span></label>
             <label><input type="radio" name="bill" value="₹4000 - ₹8000"><span>₹4,000 – ₹8,000</span></label>
             <label><input type="radio" name="bill" value="More than ₹8000"><span>Over ₹8,000</span></label>
           </div>
@@ -211,7 +208,9 @@
             <input type="checkbox" id="terms" name="terms" required>
             <span>I agree to the <a href="terms.html">Terms &amp; Conditions</a></span>
           </label>
-          <button class="btn btn--fill" type="submit">Get a solar consultation</button>
+          <p class="field-error" id="terms-error" hidden></p>
+          <button class="btn btn--fill" type="submit" id="consult-submit">Get a solar consultation</button>
+          <p class="form-status" id="form-status" role="status" hidden></p>
         </form>
       </div>
     </section>
@@ -223,7 +222,7 @@
     </a>
     <p class="footer__services">Solar solutions · Installation · Consultation · Maintenance</p>
     <nav class="footer__nav" aria-label="Footer">
-      <a href="#home">Solutions</a>
+      <a href="#solutions">Solutions</a>
       <a href="#projects">Projects</a>
       <a href="#process">Process</a>
       <a href="#why">About</a>
@@ -233,7 +232,6 @@
     <div class="footer__meta">
       <a href="tel:+919216054155">+91 92160 54155</a>
       <a href="mailto:info@ellipsesolar.in">info@ellipsesolar.in</a>
-      <a href="mailto:sales@ellipsesolar.com">sales@ellipsesolar.com</a>
       <span>Punjab, India</span>
       <a href="https://www.instagram.com/ellipsesolarofficial/" target="_blank" rel="noopener noreferrer">Instagram</a>
       <a href="https://wa.me/919216054155" target="_blank" rel="noopener noreferrer">WhatsApp</a>
@@ -241,6 +239,6 @@
     </div>
   </footer>
 
-  <script src="js/main.js?v=film5"></script>
+  <script src="js/main.js?v=flows2"></script>
 </body>
 </html>
