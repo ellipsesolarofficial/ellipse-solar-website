@@ -954,21 +954,30 @@
     return clamp((p - a) / Math.max(0.0001, b - a), 0, 1);
   }
 
+  function topInset() {
+    if (!narrow()) return 0;
+    const bar = document.getElementById("nav");
+    return (bar ? bar.offsetHeight : 76) + 20;
+  }
+
   function filmLayout() {
     const wide = !narrow();
+    const inset = topInset();
     const pw = w * (wide ? 0.42 : 0.7);
     const ph = pw * 0.56;
     const px = (wide ? w * 0.68 : w * 0.5) - pw / 2;
-    const ceiling = h * (wide ? 0.52 : 0.42);
-    let py = h * (wide ? 0.16 : 0.1);
-    if (py + ph > ceiling) py = Math.max(h * 0.06, ceiling - ph);
+    const ceiling = Math.max(inset + 80, h * (wide ? 0.52 : 0.5));
+    let py = wide ? h * 0.16 : inset;
+    if (py + ph > ceiling) py = Math.max(inset, ceiling - ph);
     const hw = w * (wide ? 0.24 : 0.42);
     const hh = hw * 0.72;
-    let hy = h * (wide ? 0.12 : 0.07);
-    if (hy + hh > ceiling) hy = Math.max(h * 0.05, ceiling - hh);
+    let hy = wide ? h * 0.12 : inset;
+    if (hy + hh > ceiling) hy = Math.max(inset, ceiling - hh);
+    const sunR = Math.min(w, h) * (wide ? 0.2 : 0.15);
+    const sunY = wide ? h * 0.32 : Math.max(inset + sunR * 1.8, h * 0.3);
     return {
-      sun: { x: w * (wide ? 0.58 : 0.5), y: h * (wide ? 0.32 : 0.24) },
-      sunR: Math.min(w, h) * (wide ? 0.2 : 0.15),
+      sun: { x: w * (wide ? 0.58 : 0.5), y: Math.min(sunY, ceiling - sunR) },
+      sunR: sunR,
       panel: { x: px, y: py, w: pw, h: ph },
       house: {
         x: wide ? w * 0.08 : (w - hw) / 2,
