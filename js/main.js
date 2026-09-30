@@ -135,44 +135,21 @@
     ];
   }
 
-  function houseGeom(shiftX) {
+  function gridNodes() {
     const f = focal();
     const s = unit();
-    const bw = 248 * s;
-    const wall = 138 * s;
-    const x = f.x - bw / 2 + (shiftX || 0);
-    const y = f.y - wall / 2 + 28 * s;
-    return { x: x, y: y, bw: bw, wall: wall, s: s, f: f };
+    return [
+      { x: f.x - 170 * s, y: f.y, c: AMBER },
+      { x: f.x - 40 * s, y: f.y - 8 * s, c: WHITE },
+      { x: f.x + 80 * s, y: f.y - 78 * s, c: TEAL },
+      { x: f.x + 168 * s, y: f.y + 8 * s, c: TEAL },
+      { x: f.x + 96 * s, y: f.y + 86 * s, c: TEAL },
+      { x: f.x + 210 * s, y: f.y - 28 * s, c: WHITE },
+      { x: f.x + 30 * s, y: f.y + 36 * s, c: IRIS }
+    ];
   }
 
-  function sag(a, b, u, drop) {
-    const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 + drop };
-    return quad(a, mid, b, u);
-  }
-
-  function exportRoute() {
-    const s = unit();
-    const y = h * (narrow() ? 0.18 : 0.22);
-    const anchor = narrow() ? w * 0.16 : Math.min(w * 0.56, w - 520 * s);
-    return {
-      s: s,
-      home: { x: anchor + 170 * s, y: y },
-      towers: [
-        { x: anchor + 300 * s, y: y - 26 * s },
-        { x: anchor + 440 * s, y: y - 44 * s },
-        { x: anchor + 580 * s, y: y - 6 * s }
-      ]
-    };
-  }
-
-  function exportPoint(u) {
-    const route = exportRoute();
-    const pts = [route.home].concat(route.towers);
-    const span = pts.length - 1;
-    const scaled = clamp(u, 0, 0.999) * span;
-    const seg = Math.min(span - 1, Math.floor(scaled));
-    return sag(pts[seg], pts[seg + 1], scaled - seg, 30 * route.s);
-  }
+  const EDGES = [[0, 1], [1, 2], [1, 3], [1, 4], [1, 6], [2, 5], [3, 5], [4, 6], [6, 3]];
 
   function count() {
     return narrow() ? 72 : 156;
@@ -292,39 +269,44 @@
     }
 
     if (scene === "property") {
-      const box = houseGeom();
-      const slot = i % 4;
-      const col = slot % 2;
-      const row = Math.floor(slot / 2);
+      const f = focal();
+      const s = unit();
+      const bw = 220 * s;
+      const bh = 130 * s;
+      const x = f.x - bw / 2;
+      const y = f.y - bh / 2 + 16 * s;
+      const slot = i % 3;
       const win = {
-        x: box.x + box.bw * (0.22 + col * 0.42),
-        y: box.y + box.wall * (0.28 + row * 0.38)
+        x: x + 28 * s + slot * 64 * s + 14 * s,
+        y: y + 56 * s
       };
-      const approach = { x: box.x - 90 * box.s, y: box.y + box.wall * 0.55 };
-      const k = smooth(Math.min(1, t * 1.15));
+      const approach = { x: x - 80 * s, y: f.y };
+      const k = smooth(t);
       const p = lerpPt(approach, win, k);
       return {
-        x: p.x,
-        y: p.y,
+        x: p.x + (hash(i, 2) - 0.5) * 10,
+        y: p.y + (hash(i, 4) - 0.5) * 16,
         rot: 0,
-        size: k > 0.8 ? 2.1 : 1.6,
-        alpha: 0.45 + hash(i, 5) * 0.5,
-        color: k > 0.72 ? WHITE : IRIS,
+        size: 1.5,
+        alpha: 0.35 + hash(i, 5) * 0.5,
+        color: k > 0.65 ? WHITE : IRIS,
         shape: "dot"
       };
     }
 
     if (scene === "grid") {
-      const forward = i % 5 !== 0;
-      const speed = forward ? t * 0.85 + hash(i, 3) * 0.2 : 1 - (t * 0.55 + hash(i, 4) * 0.25);
-      const p = exportPoint(clamp(speed, 0, 1));
+      const nodes = gridNodes();
+      const edge = EDGES[i % EDGES.length];
+      const forward = i % 2 === 0;
+      const u = forward ? (hash(i, 3) * 0.3 + t * 0.9) % 1 : 1 - ((hash(i, 3) * 0.3 + t * 0.9) % 1);
+      const p = lerpPt(nodes[edge[0]], nodes[edge[1]], u);
       return {
         x: p.x,
         y: p.y,
         rot: 0,
-        size: forward ? 2 : 1.3,
-        alpha: 0.5 + hash(i, 5) * 0.45,
-        color: forward ? (hash(i, 6) > 0.55 ? TEAL : AMBER) : WHITE,
+        size: 1.6,
+        alpha: 0.4 + hash(i, 5) * 0.5,
+        color: forward ? TEAL : WHITE,
         shape: "dot"
       };
     }
@@ -436,83 +418,36 @@
     ctx.stroke();
   }
 
-  function drawSun(t, alpha, reach) {
+  function drawOrigin(t, alpha) {
     if (alpha < 0.02) return;
     const c = sunCenter();
-    const g = smooth(Math.max(t, 0.12));
-    const s = unit();
-    const rays = narrow() ? 12 : 18;
+    const g = smooth(t);
     ctx.save();
-    ctx.lineWidth = 1.35;
-    for (let i = 0; i < rays; i++) {
-      const a = (i / rays) * Math.PI * 2 - 0.35 + (reduce ? 0 : time * 0.08);
-      const inner = 20 * s;
-      const len = (48 + (i % 4) * 18) * s * (0.3 + g * 0.9);
+    ctx.globalAlpha = alpha * g;
+    ctx.strokeStyle = rgb(AMBER, 0.35);
+    ctx.lineWidth = 1;
+    for (let ring = 1; ring <= 3; ring++) {
       ctx.beginPath();
-      ctx.moveTo(c.x + Math.cos(a) * inner, c.y + Math.sin(a) * inner);
-      ctx.lineTo(c.x + Math.cos(a) * (inner + len), c.y + Math.sin(a) * (inner + len));
-      ctx.strokeStyle = rgb(AMBER, alpha * (0.35 + 0.5 * g));
+      ctx.ellipse(c.x, c.y, 58 * ring * unit(), 34 * ring * unit(), -0.5, 0, Math.PI * 2);
       ctx.stroke();
     }
-    if (reach > 0.02) {
-      const panel = panelGeom();
-      const aimY = panel.cy - panel.ph * 0.48;
-      ctx.lineWidth = 1.5;
-      for (let i = 0; i < 7; i++) {
-        const end = { x: panel.cx + (i - 3) * panel.pw * 0.12, y: aimY };
-        const tip = lerpPt(c, end, 0.12 + reach * 0.88);
-        ctx.beginPath();
-        ctx.moveTo(c.x, c.y);
-        ctx.lineTo(tip.x, tip.y);
-        ctx.strokeStyle = rgb(AMBER, alpha * 0.55);
-        ctx.stroke();
-      }
-    }
-    ctx.beginPath();
-    ctx.arc(c.x, c.y, 16 * s, 0, Math.PI * 2);
-    ctx.fillStyle = rgb([255, 214, 120], alpha * (0.35 + 0.5 * g));
-    ctx.fill();
-    const glow = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 78 * s);
-    glow.addColorStop(0, rgb(AMBER, alpha * 0.28 * (0.4 + g)));
+    const glow = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 90 * unit());
+    glow.addColorStop(0, rgb(AMBER, 0.16 * g));
     glow.addColorStop(1, rgb(AMBER, 0));
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(c.x, c.y, 78 * s, 0, Math.PI * 2);
+    ctx.arc(c.x, c.y, 90 * unit(), 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = alpha * g * 0.4;
-    ctx.strokeStyle = rgb(AMBER, 0.55);
-    ctx.lineWidth = 1;
-    for (let ring = 1; ring <= 2; ring++) {
-      ctx.beginPath();
-      ctx.ellipse(c.x, c.y, 46 * ring * s, 27 * ring * s, -0.45, 0, Math.PI * 2);
-      ctx.stroke();
-    }
     ctx.restore();
-  }
-
-  function drawOrigin(t, alpha) {
-    drawSun(t, alpha, 0);
   }
 
   function drawPanel(t, alpha) {
     if (alpha < 0.02) return;
-    const appear = smooth(Math.min(1, 0.35 + t * 1.1));
-    const g = panelGeom();
+    const appear = smooth(Math.min(1, t * 1.2));
     ctx.save();
-    const source = { x: g.cx, y: g.cy - g.ph * 0.95 };
-    ctx.lineWidth = 1.3;
-    for (let i = 0; i < 6; i++) {
-      const hit = panelPoint((i + 0.5) / 6, 0.08);
-      const tip = lerpPt(source, hit, 0.2 + appear * 0.8);
-      ctx.beginPath();
-      ctx.moveTo(source.x + (i - 2.5) * 10, source.y);
-      ctx.lineTo(tip.x, tip.y);
-      ctx.strokeStyle = rgb(AMBER, alpha * 0.45 * appear);
-      ctx.stroke();
-    }
     ctx.globalAlpha = alpha * appear;
-    ctx.lineWidth = 1.25;
-    ctx.strokeStyle = "rgba(255,255,255,0.82)";
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(255,255,255,0.72)";
     ctx.beginPath();
     const frame = [panelPoint(0, 0), panelPoint(1, 0), panelPoint(1, 1), panelPoint(0, 1)];
     ctx.moveTo(frame[0].x, frame[0].y);
@@ -521,7 +456,7 @@
     ctx.stroke();
     const cols = 8;
     const rows = 5;
-    ctx.strokeStyle = "rgba(255,255,255,0.38)";
+    ctx.strokeStyle = "rgba(255,255,255,0.28)";
     for (let c = 1; c < cols; c++) {
       const a = panelPoint(c / cols, 0);
       const b = panelPoint(c / cols, 1);
@@ -538,7 +473,7 @@
       ctx.lineTo(b.x, b.y);
       ctx.stroke();
     }
-    ctx.strokeStyle = rgb(AMBER, 0.85);
+    ctx.strokeStyle = rgb(AMBER, 0.75);
     [0.33, 0.66].forEach((u) => {
       const a = panelPoint(u, 0.04);
       const b = panelPoint(u, 0.96);
@@ -547,63 +482,36 @@
       ctx.lineTo(b.x, b.y);
       ctx.stroke();
     });
-    for (let n = 0; n < 4; n++) {
-      const pulse = (t * 2.2 + n * 0.23) % 1;
-      if (pulse > 0.62) {
-        const hit = cellFor((n * 9 + Math.floor(t * 8)) % 40);
-        const k = (pulse - 0.62) / 0.38;
-        ctx.beginPath();
-        ctx.arc(hit.x, hit.y, 3 + k * 16, 0, Math.PI * 2);
-        ctx.strokeStyle = rgb(WHITE, (1 - k) * 0.85 * alpha);
-        ctx.stroke();
-      }
-    }
-    ctx.restore();
-  }
-
-  function drawCables(t, alpha) {
-    const g = panelGeom();
-    const s = unit();
-    const bus = { x: g.cx + g.pw * 0.02, y: g.cy + g.ph * 0.52 };
-    const join = { x: bus.x + 36 * s, y: bus.y + 54 * s };
-    const exit = { x: join.x + 120 * s, y: join.y + 10 * s };
-    ctx.save();
-    ctx.lineWidth = 1.6;
-    ctx.strokeStyle = rgb(IRIS, alpha * 0.85);
-    ctx.setLineDash([5, 9]);
-    ctx.lineDashOffset = reduce ? 0 : -time * 42;
-    for (let n = 0; n < 4; n++) {
-      const cell = panelPoint(0.2 + n * 0.2, 0.92);
+    if (t > 0.4) {
+      const pulse = (t * 3) % 1;
+      const hit = cellFor(Math.floor(t * 17) % 40);
       ctx.beginPath();
-      ctx.moveTo(cell.x, cell.y);
-      ctx.quadraticCurveTo(cell.x, bus.y, join.x, join.y);
+      ctx.arc(hit.x, hit.y, 3 + pulse * 14, 0, Math.PI * 2);
+      ctx.strokeStyle = rgb(WHITE, (1 - pulse) * 0.7);
       ctx.stroke();
     }
-    ctx.lineWidth = 2.2;
-    ctx.strokeStyle = rgb(WHITE, alpha * 0.9);
-    ctx.beginPath();
-    ctx.moveTo(join.x, join.y);
-    ctx.lineTo(exit.x, exit.y);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    const pulse = exportPulse(t);
-    const head = lerpPt(join, exit, pulse);
-    ctx.beginPath();
-    ctx.arc(head.x, head.y, 4, 0, Math.PI * 2);
-    ctx.fillStyle = rgb(WHITE, alpha);
-    ctx.fill();
     ctx.restore();
-  }
-
-  function exportPulse(t) {
-    const base = reduce ? t : (t * 0.65 + time * 0.18) % 1;
-    return base;
   }
 
   function drawGenerate(t, alpha) {
     if (alpha < 0.02) return;
-    drawPanel(1, alpha * (0.72 + 0.28 * (1 - smooth(t))));
-    drawCables(t, alpha);
+    const g = panelGeom();
+    const exit = { x: g.cx + g.pw * 0.08, y: g.cy + g.ph * 0.78 };
+    ctx.save();
+    ctx.lineWidth = 1;
+    for (let n = 0; n < 5; n++) {
+      const cell = cellFor(n * 7);
+      const mid = { x: mix(cell.x, exit.x, 0.5), y: mix(cell.y, exit.y, 0.4) };
+      ctx.beginPath();
+      for (let s = 0; s <= 16; s++) {
+        const p = quad(cell, mid, exit, s / 16);
+        if (s === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.strokeStyle = rgb(IRIS, alpha * 0.35 * smooth(t));
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 
   function drawConvert(t, alpha) {
@@ -622,19 +530,10 @@
     roundRect(x, y, bw, bh, 10);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(x - 70 * s, f.y);
+    ctx.moveTo(x - 36 * s, f.y);
     ctx.lineTo(x, f.y);
-    ctx.strokeStyle = rgb(IRIS, 0.95);
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 8]);
-    ctx.lineDashOffset = reduce ? 0 : -time * 46;
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.strokeStyle = "rgba(255,255,255,0.7)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
     ctx.moveTo(x + bw, f.y);
-    ctx.lineTo(x + bw + 64 * s, f.y);
+    ctx.lineTo(x + bw + 42 * s, f.y);
     ctx.stroke();
     ctx.globalAlpha = alpha;
     ctx.strokeStyle = rgb(WHITE, 0.9);
@@ -652,125 +551,70 @@
     ctx.restore();
   }
 
-  function drawHouse(box, t, alpha, compact) {
-    const x = box.x;
-    const y = box.y;
-    const bw = box.bw * (compact ? 0.72 : 1);
-    const wall = box.wall * (compact ? 0.72 : 1);
-    const s = box.s;
-    const roof = y - 52 * s * (compact ? 0.8 : 1);
-    ctx.save();
-    ctx.lineWidth = 1.35;
-    ctx.strokeStyle = "rgba(255,255,255,0.84)";
-    ctx.beginPath();
-    ctx.moveTo(x - 16 * s, y);
-    ctx.lineTo(x + bw / 2, roof);
-    ctx.lineTo(x + bw + 16 * s, y);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.strokeRect(x, y, bw, wall);
-    ctx.beginPath();
-    ctx.moveTo(x + bw * 0.42, y + wall);
-    ctx.lineTo(x + bw * 0.42, y + wall * 0.42);
-    ctx.lineTo(x + bw * 0.58, y + wall * 0.42);
-    ctx.lineTo(x + bw * 0.58, y + wall);
-    ctx.stroke();
-    const feed = { x: x - 78 * s, y: y + wall * 0.62 };
-    ctx.strokeStyle = rgb(IRIS, 0.95);
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 8]);
-    ctx.lineDashOffset = reduce ? 0 : -time * 48;
-    ctx.beginPath();
-    ctx.moveTo(feed.x, feed.y);
-    ctx.lineTo(x, feed.y);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    const windows = [
-      [0.16, 0.18],
-      [0.62, 0.18],
-      [0.16, 0.55],
-      [0.62, 0.55]
-    ];
-    windows.forEach((spot, index) => {
-      const on = smooth((t - index * 0.16) / 0.22);
-      const wx = x + bw * spot[0];
-      const wy = y + wall * spot[1];
-      const ww = bw * 0.18;
-      const wh = wall * 0.22;
-      ctx.strokeStyle = "rgba(255,255,255,0.55)";
-      ctx.strokeRect(wx, wy, ww, wh);
-      ctx.fillStyle = rgb(on > 0.5 ? [255, 236, 196] : WHITE, alpha * (0.05 + on * 0.9));
-      ctx.fillRect(wx, wy, ww, wh);
-      if (on > 0.4) {
-        const glow = ctx.createRadialGradient(wx + ww / 2, wy + wh / 2, 2, wx + ww / 2, wy + wh / 2, ww);
-        glow.addColorStop(0, rgb(AMBER, alpha * on * 0.35));
-        glow.addColorStop(1, rgb(AMBER, 0));
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(wx + ww / 2, wy + wh / 2, ww, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    });
-    ctx.restore();
-  }
-
   function drawProperty(t, alpha) {
     if (alpha < 0.02) return;
-    drawHouse(houseGeom(), t, alpha, false);
-  }
-
-  function drawPylon(x, y, s) {
+    const f = focal();
+    const s = unit();
+    const bw = 230 * s;
+    const bh = 132 * s;
+    const x = f.x - bw / 2;
+    const y = f.y - bh / 2 + 18 * s;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(255,255,255,0.72)";
+    ctx.strokeRect(x, y, bw, bh);
     ctx.beginPath();
-    ctx.moveTo(x, y - 46 * s);
-    ctx.lineTo(x, y + 58 * s);
-    ctx.moveTo(x - 18 * s, y + 58 * s);
-    ctx.lineTo(x, y + 34 * s);
-    ctx.lineTo(x + 18 * s, y + 58 * s);
-    ctx.moveTo(x - 24 * s, y - 28 * s);
-    ctx.lineTo(x + 24 * s, y - 28 * s);
-    ctx.moveTo(x - 16 * s, y - 6 * s);
-    ctx.lineTo(x + 16 * s, y - 6 * s);
-    ctx.moveTo(x - 24 * s, y - 28 * s);
-    ctx.lineTo(x, y - 6 * s);
-    ctx.lineTo(x + 24 * s, y - 28 * s);
+    ctx.moveTo(x - 14 * s, y);
+    ctx.lineTo(x + bw + 14 * s, y);
     ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x - 70 * s, f.y);
+    ctx.lineTo(x, f.y);
+    ctx.strokeStyle = rgb(IRIS, 0.8);
+    ctx.stroke();
+    const roofA = smooth(t);
+    ctx.globalAlpha = alpha * (0.25 + roofA * 0.75);
+    ctx.strokeStyle = rgb(AMBER, 0.9);
+    const rx = x + 18 * s;
+    const ry = y - 34 * s;
+    const rw = bw - 36 * s;
+    const rh = 26 * s;
+    ctx.strokeRect(rx, ry, rw, rh);
+    ctx.beginPath();
+    for (let c = 1; c < 6; c++) {
+      ctx.moveTo(rx + (rw / 6) * c, ry);
+      ctx.lineTo(rx + (rw / 6) * c, ry + rh);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    for (let i = 0; i < 3; i++) {
+      const wa = smooth((t - 0.22 - i * 0.16) / 0.28);
+      ctx.fillStyle = rgb(WHITE, alpha * (0.04 + wa * 0.82));
+      ctx.fillRect(x + 26 * s + i * 68 * s, y + 36 * s, 32 * s, 46 * s);
+    }
+    ctx.restore();
   }
 
   function drawGrid(t, alpha) {
     if (alpha < 0.02) return;
-    const route = exportRoute();
-    const proto = houseGeom();
-    const compactW = proto.bw * 0.72;
-    const box = houseGeom(route.home.x - proto.f.x - compactW * 0.5);
+    const nodes = gridNodes();
     ctx.save();
-    ctx.globalAlpha = alpha;
-    drawHouse(box, 1, alpha, true);
-    ctx.strokeStyle = rgb(TEAL, 0.9);
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([7, 8]);
-    ctx.lineDashOffset = reduce ? 0 : -time * 36 * (0.4 + t);
-    const pts = [route.home].concat(route.towers);
-    for (let i = 0; i < pts.length - 1; i++) {
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = alpha * smooth(Math.min(1, t * 1.3));
+    EDGES.forEach((edge) => {
       ctx.beginPath();
-      for (let s = 0; s <= 18; s++) {
-        const p = sag(pts[i], pts[i + 1], s / 18, 30 * route.s);
-        if (s === 0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
-      }
+      ctx.moveTo(nodes[edge[0]].x, nodes[edge[0]].y);
+      ctx.lineTo(nodes[edge[1]].x, nodes[edge[1]].y);
+      ctx.strokeStyle = rgb(TEAL, 0.45);
       ctx.stroke();
-    }
-    ctx.setLineDash([]);
-    ctx.strokeStyle = "rgba(255,255,255,0.8)";
-    ctx.lineWidth = 1.25;
-    route.towers.forEach((tower) => drawPylon(tower.x, tower.y, route.s));
-    for (let n = 0; n < 3; n++) {
-      const u = (t * 0.7 + n * 0.28 + (reduce ? 0 : time * 0.12)) % 1;
-      const p = exportPoint(u);
+    });
+    nodes.forEach((node) => {
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-      ctx.fillStyle = rgb(n === 2 ? WHITE : TEAL, alpha);
-      ctx.fill();
-    }
+      ctx.arc(node.x, node.y, 3.2, 0, Math.PI * 2);
+      ctx.strokeStyle = rgb(node.c, 0.9);
+      ctx.stroke();
+    });
     ctx.restore();
   }
 
@@ -882,7 +726,7 @@
   const drawers = {
     origin: drawOrigin,
     capture: function (t, alpha) {
-      drawSun(1, alpha, smooth(t));
+      drawOrigin(1 - t, alpha * (1 - t));
     },
     panel: drawPanel,
     generate: function (t, alpha) {
@@ -962,10 +806,11 @@
   }
 
   function textOpacity(scene, t) {
-    if (scene === "drift" || scene === "projects") return 1;
-    if (scene === "origin") return t < 0.88 ? 1 : clamp((1 - t) / 0.12, 0, 1);
-    const fadeIn = t < 0.05 ? Math.max(0.45, t / 0.05) : 1;
-    const fadeOut = t > 0.92 ? (1 - t) / 0.08 : 1;
+    if (scene === "drift") return 1;
+    if (scene === "origin") return t < 0.68 ? 1 : clamp((1 - t) / 0.32, 0, 1);
+    if (scene === "projects") return 1;
+    const fadeIn = t < 0.1 ? t / 0.1 : 1;
+    const fadeOut = t > 0.82 ? (1 - t) / 0.18 : 1;
     return clamp(Math.min(fadeIn, fadeOut), 0, 1);
   }
 
@@ -1018,15 +863,8 @@
     const track = document.getElementById("track");
     if (track && track.parentElement) {
       const max = Math.max(0, track.scrollWidth - track.parentElement.clientWidth);
-      const span = clamp((projects.t - 0.04) / 0.92, 0, 1);
+      const span = clamp((projects.t - 0.06) / 0.88, 0, 1);
       track.style.transform = "translate3d(" + (-span * max).toFixed(2) + "px,0,0)";
-      const mid = window.innerWidth * 0.5;
-      track.querySelectorAll(".project").forEach((fig) => {
-        const rect = fig.getBoundingClientRect();
-        const dist = Math.abs(rect.left + rect.width * 0.5 - mid) / window.innerWidth;
-        const scale = 1 - Math.min(0.35, dist) * 0.08;
-        fig.style.transform = "scale(" + scale.toFixed(3) + ")";
-      });
     }
 
     nav.classList.toggle("is-solid", window.scrollY > 24 || activeIndex > 0);
@@ -1080,20 +918,19 @@
     let sceneB = current.scene;
     let tB = current.t;
     let blend = 0;
-    if (current.t > 0.8 && active < layout.length - 1 && current.scene !== "drift") {
-      blend = (current.t - 0.8) / 0.2;
+    if (current.t > 0.74 && active < layout.length - 1 && current.scene !== "drift") {
+      blend = (current.t - 0.74) / 0.26;
       sceneB = layout[active + 1].scene;
-      tB = 0.28 + blend * 0.35;
+      tB = 0;
     }
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    ctx.setLineDash([]);
 
-    if (drawers[current.scene]) drawers[current.scene](current.t, Math.max(0.55, 1 - blend * 0.45));
-    if (blend > 0.02 && drawers[sceneB] && sceneB !== current.scene) drawers[sceneB](tB, Math.max(0.4, blend));
+    if (drawers[current.scene]) drawers[current.scene](current.t, 1 - blend);
+    if (blend > 0.02 && drawers[sceneB]) drawers[sceneB](tB, blend);
     renderParticles(current.scene, current.t, sceneB, tB, blend);
     writeDom(active);
 
