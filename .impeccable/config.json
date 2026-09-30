@@ -11,6 +11,33 @@
         ],
         "createdAt": "2026-09-30T18:03:21.785Z",
         "reason": "Brand type scale is intentional: display headlines at 64–113px against 18px body. The blocked edit only updates a script cache query."
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "files": [
+          "links.html"
+        ],
+        "createdAt": "2026-09-30T18:14:48.226Z",
+        "reason": "The site typeface is Inter, specified as the PP Neue Montreal fallback."
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "terms.html"
+        ],
+        "createdAt": "2026-09-30T18:14:48.239Z",
+        "reason": "Existing terms text uses #bdbdbd and #9a9a9a on black, which already clears WCAG AA. This edit only swaps the logo image."
+      },
+      {
+        "rule": "hero-eyebrow-chip",
+        "value": "*",
+        "files": [
+          "terms.html"
+        ],
+        "createdAt": "2026-09-30T18:15:03.533Z",
+        "reason": "Terms is a legal page, not a marketing hero. The uppercase labels are the site navigation. This edit only swaps the logo."
       }
     ]
   }

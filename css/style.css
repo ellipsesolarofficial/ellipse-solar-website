@@ -101,7 +101,7 @@ button, input { font-family: inherit; }
 }
 
 .nav__logo svg,
-.nav__logo img { height: 22px; width: auto; display: block; }
+.nav__logo img { height: 46px; width: auto; display: block; }
 
 .nav__links {
   display: flex;
@@ -743,7 +743,8 @@ h2 { font-size: clamp(42px, 5.6vw, 84px); }
   padding: 8vh var(--pad) 4rem;
 }
 
-.footer__mark svg { height: 22px; width: auto; }
+.footer__mark svg,
+.footer__mark img { height: 52px; width: auto; display: block; }
 
 .footer__services {
   margin: 1.75rem 0 0;
