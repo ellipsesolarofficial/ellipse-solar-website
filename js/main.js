@@ -263,8 +263,84 @@ document.addEventListener('keydown', (e) => {
 // ============================
 document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', (e) => {
+        const href = a.getAttribute('href');
+        if (!href || href === '#') return;
         e.preventDefault();
-        const target = document.querySelector(a.getAttribute('href'));
+        const target = document.querySelector(href);
         if (target) target.scrollIntoView({ behavior: 'smooth' });
     });
 });
+
+// Solar field: outlined triangles gathered into an ellipse, plus a sparse drift.
+const heroField = document.getElementById('hero-field');
+if (heroField) {
+    const ctx = heroField.getContext('2d');
+    const colors = ['#8052ff', '#ffb829', '#15846e', '#c084fc', '#7aa2ff', '#f472b6'];
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let particles = [];
+    let width = 0;
+    let height = 0;
+
+    function layoutField() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = heroField.clientWidth;
+        height = heroField.clientHeight;
+        heroField.width = Math.max(1, Math.floor(width * dpr));
+        heroField.height = Math.max(1, Math.floor(height * dpr));
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const cx = width * 0.74;
+        const cy = height * 0.46;
+        const rx = Math.min(width, height) * 0.34;
+        const ry = rx * 0.78;
+        const count = Math.max(80, Math.round((width * height) / 4200));
+        particles = [];
+        for (let i = 0; i < count; i++) {
+            const inSun = Math.random() < 0.78;
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.pow(Math.random(), 0.45);
+            particles.push({
+                x: inSun ? cx + Math.cos(angle) * rx * radius : Math.random() * width,
+                y: inSun ? cy + Math.sin(angle) * ry * radius : Math.random() * height,
+                size: (inSun ? 2.4 : 1.6) + Math.random() * 2.4,
+                rot: Math.random() * Math.PI,
+                spin: (Math.random() - 0.5) * 0.008,
+                drift: (Math.random() - 0.5) * 0.12,
+                color: colors[i % colors.length],
+                alpha: inSun ? 0.4 + Math.random() * 0.55 : 0.12 + Math.random() * 0.28
+            });
+        }
+    }
+
+    function drawField() {
+        ctx.clearRect(0, 0, width, height);
+        for (const particle of particles) {
+            if (!reduceMotion) {
+                particle.rot += particle.spin;
+                particle.y += particle.drift * 0.08;
+            }
+            ctx.save();
+            ctx.translate(particle.x, particle.y);
+            ctx.rotate(particle.rot);
+            ctx.globalAlpha = particle.alpha;
+            ctx.strokeStyle = particle.color;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, -particle.size);
+            ctx.lineTo(particle.size * 0.9, particle.size * 0.58);
+            ctx.lineTo(-particle.size * 0.9, particle.size * 0.58);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+        }
+        ctx.globalAlpha = 1;
+        if (!reduceMotion) requestAnimationFrame(drawField);
+    }
+
+    layoutField();
+    drawField();
+    window.addEventListener('resize', () => {
+        layoutField();
+        if (reduceMotion) drawField();
+    });
+}

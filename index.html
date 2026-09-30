@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ellipse Solar | Powering a Sustainable Future</title>
     <meta name="description" content="Ellipse Solar designs and installs on-grid, off-grid, and hybrid solar systems from 3 kW to 50 kW. DCR panels, subsidy paperwork, and rooftop or ground-mount structures.">
-    <meta name="theme-color" content="#f97316">
+    <meta name="theme-color" content="#000000">
     <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Navigation -->
@@ -39,23 +39,15 @@
 
     <!-- Hero -->
     <section class="hero" id="home">
-        <div class="hero__bg">
-            <img src="images/hero.webp" alt="Solar panels installation by Ellipse Solar" loading="eager">
-            <div class="hero__overlay"></div>
-        </div>
+        <canvas class="hero__field" id="hero-field" aria-hidden="true"></canvas>
         <div class="container hero__container">
             <div class="hero__content reveal">
-                <p class="hero__badge">✓ Trusted by 500+ Happy Customers</p>
-                <h1 class="hero__title">Make Your Electricity<br><span class="hero__free">FREE</span><br><span class="highlight">Earn From Every Extra Unit.</span></h1>
+                <p class="hero__badge">500+ installations</p>
+                <h1 class="hero__title">Make your electricity free.</h1>
                 <p class="hero__subtitle">On-grid, off-grid, and hybrid systems from 3 kW to 50 kW. Use what you generate, sell the extra units back to the grid, and stay eligible for subsidy with DCR panels.</p>
-                <div class="hero__stats">
-                    <div class="hero__stat"><strong>500+</strong><span>Installations</span></div>
-                    <div class="hero__stat"><strong>10MW+</strong><span>Capacity</span></div>
-                    <div class="hero__stat"><strong>98%</strong><span>Satisfaction</span></div>
-                </div>
                 <div class="hero__actions">
-                    <a href="#contact" class="btn btn--primary btn--lg">Get Free Consultation →</a>
-                    <a href="#process" class="btn btn--white btn--lg">How It Works</a>
+                    <a href="#contact" class="btn btn--primary">Get a free quote</a>
+                    <a href="#process" class="btn btn--ghost">How it works</a>
                 </div>
             </div>
         </div>
@@ -71,25 +63,21 @@
             </div>
             <div class="services__grid">
                 <div class="card reveal">
-                    <div class="card__img"><img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&q=80" alt="On-grid rooftop solar panels connected to the electricity grid" loading="lazy"></div>
                     <h3>On-Grid Solar</h3>
                     <p>Tied to your DISCOM connection. Daytime load runs on solar, and surplus units are exported. Available in 1-phase and 3-phase, with Polycab, Solaire, or Xwatt inverters.</p>
                     <a href="#contact" class="card__link">Get Started →</a>
                 </div>
                 <div class="card reveal">
-                    <div class="card__img"><img src="https://images.unsplash.com/photo-1592833159155-c62df1b65634?w=400&q=80" alt="Home battery bank for off-grid solar backup" loading="lazy"></div>
                     <h3>Off-Grid Solar</h3>
                     <p>For sites that need power without depending on the grid. Polycab off-grid inverters with a lead-acid or lithium (LiFePO4) battery bank.</p>
                     <a href="#contact" class="card__link">Get Started →</a>
                 </div>
                 <div class="card reveal">
-                    <div class="card__img"><img src="https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=400&q=80" alt="Hybrid solar system on a residential rooftop" loading="lazy"></div>
                     <h3>Hybrid Solar</h3>
                     <p>Grid plus battery. The system exports surplus when the grid is up and keeps essential loads running during an outage.</p>
                     <a href="#contact" class="card__link">Get Started →</a>
                 </div>
                 <div class="card reveal">
-                    <div class="card__img"><img src="https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=400&q=80" alt="Ground-mounted solar array" loading="lazy"></div>
                     <h3>Rooftop &amp; Ground Mount</h3>
                     <p>Standard rooftop, difficult-access sites, or open ground mounting. Structures in TATA Structura or Apollo GI, for buildings up to 10 floors.</p>
                     <a href="#contact" class="card__link">Get Started →</a>
@@ -308,27 +296,18 @@
             </div>
             <div class="projects__grid">
                 <div class="project reveal">
-                    <div class="project__img">
-                        <img src="https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=500&q=80" alt="Residential rooftop solar installation" loading="lazy">
-                    </div>
                     <div class="project__info">
                         <h3>5 kW On-Grid</h3>
                         <p>Home rooftop • 1-phase or 3-phase</p>
                     </div>
                 </div>
                 <div class="project reveal">
-                    <div class="project__img">
-                        <img src="https://images.unsplash.com/photo-1497440001374-f26997328c1b?w=500&q=80" alt="Commercial solar panel installation on office building" loading="lazy">
-                    </div>
                     <div class="project__info">
                         <h3>10 kW Commercial</h3>
                         <p>Shop or office • 3-phase on-grid</p>
                     </div>
                 </div>
                 <div class="project reveal">
-                    <div class="project__img">
-                        <img src="https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=500&q=80" alt="Large-scale industrial solar farm" loading="lazy">
-                    </div>
                     <div class="project__info">
                         <h3>Up to 50 kW</h3>
                         <p>Largest standard size • rooftop or ground mount</p>
@@ -371,7 +350,7 @@
             <div class="cta__box">
                 <h2>Ready for a System Sized to Your Bill?</h2>
                 <p>Tell us your monthly bill and we will quote an on-grid, off-grid, or hybrid system from the same catalogue.</p>
-                <a href="#contact" class="btn btn--white btn--lg">Get Your Free Quote →</a>
+                <a href="#contact" class="btn btn--primary">Get a free quote</a>
             </div>
         </div>
     </section>

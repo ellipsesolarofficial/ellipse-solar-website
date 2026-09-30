@@ -9,23 +9,19 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600&display=swap" rel="stylesheet">
     <style>
-        .terms-page { padding: 140px 0 80px; background: var(--light); min-height: 100vh; }
-        .terms-content { max-width: 780px; margin: 0 auto; background: var(--white); padding: 48px 40px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); }
-        .terms-content h1 { font-size: 2rem; font-weight: 800; color: var(--dark); margin-bottom: 24px; }
-        .terms-content h2 { font-size: 1.3rem; font-weight: 700; color: var(--dark); margin-top: 32px; margin-bottom: 12px; }
-        .terms-content h3 { font-size: 1.1rem; font-weight: 700; color: var(--dark); margin-top: 24px; margin-bottom: 10px; }
-        .terms-content p { font-size: 0.95rem; color: var(--muted); line-height: 1.8; margin-bottom: 16px; }
-        .terms-content ul { margin-left: 20px; margin-bottom: 16px; }
-        .terms-content ul li { font-size: 0.95rem; color: var(--muted); line-height: 1.8; margin-bottom: 8px; list-style: disc; }
-        .terms-content a { color: var(--primary); text-decoration: underline; }
-        .terms-back { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 24px; font-size: 0.88rem; font-weight: 600; color: var(--primary); }
-        .terms-back:hover { gap: 10px; }
-        @media (max-width: 768px) {
-            .terms-content { padding: 32px 20px; }
-            .terms-page { padding: 100px 0 60px; }
-        }
+        .terms-page { padding: 140px 0 96px; background: #000; min-height: 100vh; }
+        .terms-content { max-width: 760px; margin: 0 auto; background: transparent; padding: 0; }
+        .terms-content h1 { font-size: clamp(42px, 6vw, 64px); font-weight: 400; letter-spacing: -0.04em; line-height: 1.02; color: #fff; margin-bottom: 24px; }
+        .terms-content h2 { font-size: 27px; font-weight: 400; letter-spacing: -0.02em; color: #fff; margin-top: 36px; margin-bottom: 12px; }
+        .terms-content h3 { font-size: 20px; font-weight: 400; color: #fff; margin-top: 24px; margin-bottom: 10px; }
+        .terms-content p, .terms-content li { font-size: 18px; font-weight: 200; color: #bdbdbd; line-height: 1.5; margin-bottom: 14px; }
+        .terms-content ul { margin: 0 0 16px 18px; }
+        .terms-content ul li { list-style: disc; }
+        .terms-content a, .terms-back { color: #ffb829; }
+        .terms-back { display: inline-flex; margin-bottom: 28px; font-size: 14px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+        .terms-content strong { color: #fff; font-weight: 400; }
     </style>
 </head>
 <body>

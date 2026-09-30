@@ -1,0 +1,14 @@
+---
+description: Commit and push to GitHub after every change
+alwaysApply: true
+---
+
+# Push after changes
+
+After any change to this project, commit the work and push it to `origin` on `main`.
+
+- Do this in the same turn as the change, without waiting to be asked.
+- Use the existing commit author: Ellipse Solar, ellipsesolarofficial@gmail.com. Do not change git config.
+- Do not commit secrets (`.env`, credentials, tokens).
+- Do not force-push.
+- After the push, confirm the GitHub Pages deploy so the live site matches the repo.
