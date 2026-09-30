@@ -58,6 +58,11 @@
     return lerpPt(lerpPt(a, b, u), lerpPt(b, c, u), u);
   }
 
+  function sag(a, b, u, drop) {
+    const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 + drop };
+    return quad(a, mid, b, u);
+  }
+
   function unit() {
     return Math.min(w, h) / 900;
   }
@@ -806,11 +811,10 @@
   }
 
   function textOpacity(scene, t) {
-    if (scene === "drift") return 1;
-    if (scene === "origin") return t < 0.68 ? 1 : clamp((1 - t) / 0.32, 0, 1);
-    if (scene === "projects") return 1;
-    const fadeIn = t < 0.1 ? t / 0.1 : 1;
-    const fadeOut = t > 0.82 ? (1 - t) / 0.18 : 1;
+    if (scene === "drift" || scene === "projects") return 1;
+    if (scene === "origin") return t < 0.9 ? 1 : clamp((1 - t) / 0.1, 0, 1);
+    const fadeIn = t < 0.08 ? Math.max(0.65, t / 0.08) : 1;
+    const fadeOut = t > 0.92 ? (1 - t) / 0.08 : 1;
     return clamp(Math.min(fadeIn, fadeOut), 0, 1);
   }
 
@@ -823,28 +827,36 @@
       copy.style.transform = reduce ? "none" : "translate3d(0," + ((0.4 - item.t) * 16).toFixed(2) + "px,0)";
     });
 
-    const panelT = layout.find((item) => item.scene === "panel").t;
-    document.querySelectorAll("#panel-flow li").forEach((li, index) => {
-      li.classList.toggle("is-hot", panelT > [0.15, 0.42, 0.7][index]);
-    });
+    const panelItem = layout.find((item) => item.scene === "panel");
+    if (panelItem) {
+      document.querySelectorAll("#panel-flow li").forEach((li, index) => {
+        li.classList.toggle("is-hot", panelItem.t > [0.15, 0.42, 0.7][index]);
+      });
+    }
 
-    const convertT = layout.find((item) => item.scene === "convert").t;
-    document.querySelectorAll("#convert-chain span").forEach((span, index) => {
-      if (index % 2 === 1) return;
-      const step = [0.15, 0.4, 0.7][index / 2];
-      span.classList.toggle("is-hot", convertT > step);
-    });
+    const convertItem = layout.find((item) => item.scene === "convert");
+    if (convertItem) {
+      document.querySelectorAll("#convert-chain span").forEach((span, index) => {
+        if (index % 2 === 1) return;
+        const step = [0.15, 0.4, 0.7][index / 2];
+        span.classList.toggle("is-hot", convertItem.t > step);
+      });
+    }
 
-    const propertyT = layout.find((item) => item.scene === "property").t;
-    document.querySelectorAll("#services li").forEach((li, index) => {
-      li.classList.toggle("is-hot", propertyT > 0.3 + index * 0.12);
-    });
+    const propertyItem = layout.find((item) => item.scene === "property");
+    if (propertyItem) {
+      document.querySelectorAll("#services li").forEach((li, index) => {
+        li.classList.toggle("is-hot", propertyItem.t > 0.3 + index * 0.12);
+      });
+    }
 
-    const gridT = layout.find((item) => item.scene === "grid").t;
-    document.querySelectorAll("#grid-chain span").forEach((span, index) => {
-      if (index % 2 === 1) return;
-      span.classList.toggle("is-hot", gridT > 0.12 + (index / 2) * 0.12);
-    });
+    const gridItem = layout.find((item) => item.scene === "grid");
+    if (gridItem) {
+      document.querySelectorAll("#grid-chain span").forEach((span, index) => {
+        if (index % 2 === 1) return;
+        span.classList.toggle("is-hot", gridItem.t > 0.12 + (index / 2) * 0.12);
+      });
+    }
 
     const processT = layout.find((item) => item.scene === "process").t;
     document.querySelectorAll("#rail li").forEach((li, index) => {
@@ -907,10 +919,364 @@
     }
   }
 
-  function frame(now) {
-    if (!frame.last) frame.last = now;
-    const dt = Math.min(0.05, (now - frame.last) / 1000);
-    frame.last = now;
+  function filmProgress() {
+    const el = document.getElementById("film");
+    if (!el) return null;
+    const rect = el.getBoundingClientRect();
+    const travel = Math.max(1, el.offsetHeight - window.innerHeight);
+    const cover = (Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0)) / window.innerHeight;
+    return { p: clamp(-rect.top / travel, 0, 1), cover: clamp(cover, 0, 1) };
+  }
+
+  function span(p, a, b) {
+    const fade = 0.075;
+    if (p >= b || (a > 0 && p <= a)) return 0;
+    const inn = a <= 0 ? 1 : clamp((p - a) / fade, 0, 1);
+    const out = clamp((b - p) / fade, 0, 1);
+    return smooth(Math.min(inn, out));
+  }
+
+  function along(p, a, b) {
+    return clamp((p - a) / Math.max(0.0001, b - a), 0, 1);
+  }
+
+  function filmLayout() {
+    const wide = !narrow();
+    const pw = w * (wide ? 0.46 : 0.8);
+    const ph = pw * 0.56;
+    const px = (wide ? w * 0.62 : w * 0.5) - pw / 2;
+    const py = (wide ? h * 0.4 : h * 0.3) - ph / 2;
+    const hw = w * (wide ? 0.32 : 0.58);
+    const hh = hw * 0.72;
+    return {
+      sun: { x: w * (wide ? 0.58 : 0.5), y: h * (wide ? 0.36 : 0.3) },
+      sunR: Math.min(w, h) * (wide ? 0.22 : 0.17),
+      panel: { x: px, y: py, w: pw, h: ph },
+      house: {
+        x: wide ? w * 0.045 : (w - hw) / 2,
+        y: wide ? h * 0.18 : h * 0.1,
+        w: hw,
+        h: hh
+      }
+    };
+  }
+
+  function panelCell(col, row, cols, rows) {
+    const g = filmLayout().panel;
+    return {
+      x: g.x + ((col + 0.5) / cols) * g.w,
+      y: g.y + ((row + 0.5) / rows) * g.h
+    };
+  }
+
+  function routePoint(u) {
+    const g = filmLayout();
+    const panelTop = { x: g.panel.x + g.panel.w * 0.5, y: g.panel.y };
+    const panelOut = { x: g.panel.x + g.panel.w * 0.72, y: g.panel.y + g.panel.h };
+    const inlet = { x: g.house.x + g.house.w * 0.5, y: g.house.y + g.house.h * 0.55 };
+    const core = { x: g.house.x + g.house.w * 0.35, y: g.house.y + g.house.h * 0.42 };
+    const exit = { x: g.house.x + g.house.w, y: g.house.y + g.house.h * 0.48 };
+    const far = { x: Math.min(w * 0.92, exit.x + w * 0.28), y: h * 0.24 };
+    const pts = [g.sun, panelTop, panelOut, inlet, core, exit, far];
+    const scaled = clamp(u, 0, 0.999) * (pts.length - 1);
+    const seg = Math.floor(scaled);
+    return lerpPt(pts[seg], pts[Math.min(pts.length - 1, seg + 1)], scaled - seg);
+  }
+
+  function headU(p) {
+    if (p < 0.1) return 0.04 + p * 0.2;
+    if (p < 0.24) return mix(0.06, 0.3, (p - 0.1) / 0.14);
+    if (p < 0.4) return mix(0.3, 0.5, (p - 0.24) / 0.16);
+    if (p < 0.56) return mix(0.5, 0.68, (p - 0.4) / 0.16);
+    if (p < 0.74) return mix(0.68, 0.8, (p - 0.56) / 0.18);
+    return mix(0.8, 1, clamp((p - 0.74) / 0.26, 0, 1));
+  }
+
+  function drawSunBody(p, alpha) {
+    if (alpha < 0.02) return;
+    const g = filmLayout();
+    const zoom = 1 + along(p, 0, 0.22) * 0.22;
+    const R = g.sunR * zoom;
+    const c = g.sun;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    const glow = ctx.createRadialGradient(c.x, c.y, R * 0.2, c.x, c.y, R * 2.3);
+    glow.addColorStop(0, rgb(AMBER, 0.35));
+    glow.addColorStop(0.45, rgb(AMBER, 0.08));
+    glow.addColorStop(1, rgb(AMBER, 0));
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, R * 2.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = rgb([255, 214, 120], 0.92);
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, R * 0.42, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = rgb(AMBER, 0.85);
+    ctx.lineWidth = 1.6;
+    const rays = narrow() ? 16 : 22;
+    for (let i = 0; i < rays; i++) {
+      const a = (i / rays) * Math.PI * 2 + (reduce ? 0 : time * 0.06);
+      const inner = R * 0.5;
+      const outer = R * (1.15 + (i % 3) * 0.18);
+      ctx.beginPath();
+      ctx.moveTo(c.x + Math.cos(a) * inner, c.y + Math.sin(a) * inner);
+      ctx.lineTo(c.x + Math.cos(a) * outer, c.y + Math.sin(a) * outer);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = alpha * 0.45;
+    ctx.lineWidth = 1;
+    for (let ring = 1; ring <= 2; ring++) {
+      ctx.beginPath();
+      ctx.ellipse(c.x, c.y, R * (1.15 + ring * 0.45), R * (0.42 + ring * 0.16), -0.4, 0, Math.PI * 2);
+      ctx.strokeStyle = rgb(AMBER, 0.35);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = alpha * 0.2;
+    ctx.beginPath();
+    ctx.ellipse(c.x - R * 1.8, c.y + R * 0.2, R * 0.28, R * 0.1, 0.4, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawArray(p, alpha) {
+    if (alpha < 0.02) return;
+    const g = filmLayout().panel;
+    const open = smooth(Math.min(1, 0.25 + along(p, 0.18, 0.4)));
+    ctx.save();
+    ctx.globalAlpha = alpha * open;
+    ctx.fillStyle = "rgba(255,255,255,0.03)";
+    ctx.fillRect(g.x, g.y, g.w, g.h);
+    ctx.strokeStyle = "rgba(255,255,255,0.88)";
+    ctx.lineWidth = 1.4;
+    ctx.strokeRect(g.x, g.y, g.w, g.h);
+    ctx.strokeStyle = "rgba(255,255,255,0.32)";
+    const cols = 8;
+    const rows = 5;
+    for (let c = 1; c < cols; c++) {
+      ctx.beginPath();
+      ctx.moveTo(g.x + (g.w / cols) * c, g.y);
+      ctx.lineTo(g.x + (g.w / cols) * c, g.y + g.h);
+      ctx.stroke();
+    }
+    for (let r = 1; r < rows; r++) {
+      ctx.beginPath();
+      ctx.moveTo(g.x, g.y + (g.h / rows) * r);
+      ctx.lineTo(g.x + g.w, g.y + (g.h / rows) * r);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = rgb(AMBER, 0.8);
+    [0.34, 0.67].forEach((u) => {
+      ctx.beginPath();
+      ctx.moveTo(g.x + g.w * u, g.y + 6);
+      ctx.lineTo(g.x + g.w * u, g.y + g.h - 6);
+      ctx.stroke();
+    });
+    const hits = Math.floor(along(p, 0.18, 0.5) * 6);
+    for (let n = 0; n < hits; n++) {
+      const pulse = ((reduce ? 0 : time * 0.35) + n * 0.17) % 1;
+      const cell = panelCell(n % cols, n % rows, cols, rows);
+      ctx.beginPath();
+      ctx.arc(cell.x, cell.y, 3 + pulse * 14, 0, Math.PI * 2);
+      ctx.strokeStyle = rgb(pulse > 0.55 ? WHITE : IRIS, (1 - pulse) * 0.8);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawCable(p, alpha) {
+    if (alpha < 0.02) return;
+    const g = filmLayout();
+    const from = { x: g.panel.x + g.panel.w * 0.72, y: g.panel.y + g.panel.h };
+    const to = { x: g.house.x + g.house.w, y: g.house.y + g.house.h * 0.42 };
+    const mid = { x: (from.x + to.x) / 2, y: Math.max(from.y, to.y) + 36 * unit() };
+    const reach = smooth(along(p, 0.36, 0.62));
+    ctx.save();
+    ctx.strokeStyle = rgb(IRIS, 0.9 * alpha);
+    ctx.lineWidth = 2.2;
+    ctx.setLineDash([6, 10]);
+    ctx.lineDashOffset = reduce ? 0 : -time * 52;
+    ctx.beginPath();
+    for (let i = 0; i <= 24; i++) {
+      const u = (i / 24) * reach;
+      const pt = quad(from, mid, to, u);
+      if (i === 0) ctx.moveTo(pt.x, pt.y);
+      else ctx.lineTo(pt.x, pt.y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+    const head = quad(from, mid, to, reach);
+    ctx.fillStyle = rgb(WHITE, alpha);
+    ctx.beginPath();
+    ctx.arc(head.x, head.y, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawHome(p, alpha) {
+    if (alpha < 0.02) return;
+    const g = filmLayout().house;
+    const t = clamp((p - 0.5) / 0.28, 0, 1);
+    const s = unit();
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    const roof = g.y + g.h * 0.28;
+    ctx.beginPath();
+    ctx.moveTo(g.x - 12, roof);
+    ctx.lineTo(g.x + g.w / 2, g.y);
+    ctx.lineTo(g.x + g.w + 12, roof);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.strokeRect(g.x, roof, g.w, g.h - (roof - g.y));
+    const doorX = g.x + g.w * 0.42;
+    const doorY = g.y + g.h * 0.62;
+    ctx.strokeRect(doorX, doorY, g.w * 0.16, g.h - (doorY - g.y));
+    const spots = [[0.12, 0.4], [0.62, 0.4], [0.12, 0.68], [0.62, 0.68]];
+    spots.forEach((spot, index) => {
+      const on = smooth((t - index * 0.14) / 0.18);
+      const wx = g.x + g.w * spot[0];
+      const wy = g.y + g.h * spot[1];
+      const ww = g.w * 0.2;
+      const wh = g.h * 0.16;
+      ctx.strokeStyle = "rgba(255,255,255,0.45)";
+      ctx.strokeRect(wx, wy, ww, wh);
+      ctx.fillStyle = rgb(on > 0.45 ? [255, 236, 196] : WHITE, 0.05 + on * 0.88);
+      ctx.fillRect(wx, wy, ww, wh);
+    });
+    const porch = smooth((t - 0.72) / 0.2);
+    if (porch > 0.05) {
+      ctx.fillStyle = rgb(AMBER, porch * 0.85);
+      ctx.beginPath();
+      ctx.arc(g.x + g.w * 0.5, g.y + g.h + 8 * s, 4 + porch * 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawGridNet(p, alpha) {
+    if (alpha < 0.02) return;
+    const g = filmLayout().house;
+    const s = unit();
+    const start = { x: g.x + g.w, y: g.y + g.h * 0.48 };
+    const towers = [
+      { x: start.x + w * 0.12, y: h * 0.22 },
+      { x: start.x + w * 0.24, y: h * 0.16 },
+      { x: Math.min(w * 0.94, start.x + w * 0.36), y: h * 0.24 }
+    ];
+    const reveal = smooth(along(p, 0.7, 0.92));
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = rgb(TEAL, 0.9);
+    ctx.lineWidth = 1.6;
+    ctx.setLineDash([7, 9]);
+    ctx.lineDashOffset = reduce ? 0 : -time * 40;
+    let prev = start;
+    towers.forEach((tower, index) => {
+      if ((index + 1) / towers.length > reveal + 0.2) return;
+      ctx.beginPath();
+      for (let i = 0; i <= 16; i++) {
+        const pt = sag(prev, tower, i / 16, 28 * s);
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      }
+      ctx.stroke();
+      prev = tower;
+    });
+    ctx.setLineDash([]);
+    ctx.strokeStyle = "rgba(255,255,255,0.85)";
+    ctx.lineWidth = 1.3;
+    towers.forEach((tower, index) => {
+      if (index / towers.length > reveal) return;
+      ctx.beginPath();
+      ctx.moveTo(tower.x, tower.y - 40 * s);
+      ctx.lineTo(tower.x, tower.y + 48 * s);
+      ctx.moveTo(tower.x - 16 * s, tower.y + 48 * s);
+      ctx.lineTo(tower.x, tower.y + 28 * s);
+      ctx.lineTo(tower.x + 16 * s, tower.y + 48 * s);
+      ctx.moveTo(tower.x - 22 * s, tower.y - 22 * s);
+      ctx.lineTo(tower.x + 22 * s, tower.y - 22 * s);
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  function drawStream(p) {
+    const end = headU(p);
+    const countDots = narrow() ? 36 : 70;
+    for (let i = 0; i < countDots; i++) {
+      const u = end - i * 0.012;
+      if (u <= 0) continue;
+      const pt = routePoint(u + (reduce ? 0 : Math.sin(time * 0.8 + i) * 0.002));
+      const color = u < 0.32 ? AMBER : u < 0.55 ? IRIS : u < 0.8 ? WHITE : TEAL;
+      ctx.fillStyle = rgb(color, 0.35 + (1 - i / countDots) * 0.6);
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, i === 0 ? 5 : 1.7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    for (let i = 0; i < 18; i++) {
+      const a = hash(i, 2) * Math.PI * 2 + (reduce ? 0 : time * 0.04);
+      const sun = filmLayout().sun;
+      const rad = filmLayout().sunR * (1.2 + hash(i, 3));
+      ctx.fillStyle = rgb(i % 4 === 0 ? WHITE : AMBER, 0.25);
+      ctx.fillRect(sun.x + Math.cos(a) * rad, sun.y + Math.sin(a) * rad, 1.4, 1.4);
+    }
+  }
+
+  function drawFilm(p, cover) {
+    ctx.save();
+    ctx.globalAlpha = cover;
+    const sunA = Math.max(span(p, 0, 0.34), p < 0.08 ? 1 : 0);
+    if (sunA > 0.02) drawSunBody(p, sunA);
+    if (span(p, 0.16, 0.58) > 0.02) drawArray(p, span(p, 0.16, 0.58));
+    if (span(p, 0.34, 0.72) > 0.02) drawCable(p, span(p, 0.34, 0.72));
+    if (span(p, 0.44, 0.9) > 0.02) drawHome(p, span(p, 0.44, 0.9));
+    if (span(p, 0.68, 1.05) > 0.02) drawGridNet(p, span(p, 0.68, 1.05));
+    drawStream(p);
+    ctx.restore();
+  }
+
+  function drawFilmIfVisible() {
+    const state = filmProgress();
+    if (!state || state.cover < 0.08) return false;
+    drawFilm(state.p, state.cover);
+    return state.cover > 0.72;
+  }
+
+  function writeFilm() {
+    const state = filmProgress();
+    if (!state) return;
+    const p = state.p;
+    document.querySelectorAll(".beat, .meter").forEach((node) => {
+      const a = parseFloat(node.dataset.start);
+      const b = parseFloat(node.dataset.end);
+      const fade = 0.04;
+      let opacity = 0;
+      if (p >= a && p <= b) {
+        const inn = a <= 0 ? 1 : clamp((p - a) / fade, 0, 1);
+        const out = clamp((b - p) / fade, 0, 1);
+        opacity = Math.min(inn, out);
+      }
+      node.style.opacity = String(opacity);
+      node.style.visibility = opacity <= 0 ? "hidden" : "visible";
+    });
+    const homeT = clamp((p - 0.5) / 0.28, 0, 1);
+    const amount = 8450 * (1 - smooth(homeT));
+    const meter = document.getElementById("meter");
+    const value = document.getElementById("meter-value");
+    if (!meter || !value) return;
+    const shown = amount < 12 ? 0 : Math.round(amount / 10) * 10;
+    meter.classList.toggle("is-zero", shown === 0 && homeT > 0.9);
+    const label = shown === 0 ? "₹0" : "₹" + shown.toLocaleString("en-IN");
+    if (value.textContent !== label) value.textContent = label;
+  }
+
+  function paint(now) {
+    try {
+    if (!paint.last) paint.last = now;
+    const dt = Math.min(0.05, (now - paint.last) / 1000);
+    paint.last = now;
     if (!reduce) time += dt;
 
     const active = readLayout();
@@ -918,24 +1284,37 @@
     let sceneB = current.scene;
     let tB = current.t;
     let blend = 0;
-    if (current.t > 0.74 && active < layout.length - 1 && current.scene !== "drift") {
-      blend = (current.t - 0.74) / 0.26;
+    if (current.t > 0.62 && active < layout.length - 1 && current.scene !== "drift") {
+      blend = (current.t - 0.62) / 0.38;
       sceneB = layout[active + 1].scene;
-      tB = 0;
+      tB = 0.35;
     }
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
+    ctx.setLineDash([]);
 
-    if (drawers[current.scene]) drawers[current.scene](current.t, 1 - blend);
-    if (blend > 0.02 && drawers[sceneB]) drawers[sceneB](tB, blend);
-    renderParticles(current.scene, current.t, sceneB, tB, blend);
     writeDom(active);
+    writeFilm();
+    const filmOn = drawFilmIfVisible();
+    if (!filmOn) {
+      if (drawers[current.scene]) drawers[current.scene](Math.max(current.t, 0.2), Math.max(0.55, 1 - blend * 0.4));
+      if (blend > 0.02 && drawers[sceneB] && sceneB !== current.scene) drawers[sceneB](Math.max(tB, 0.25), Math.max(0.4, blend));
+      renderParticles(current.scene, current.t, sceneB, tB, blend);
+    }
+    } catch (err) {
+      window.__filmError = String(err && err.stack || err);
+    }
+  }
 
+  function frame(now) {
+    paint(now);
     requestAnimationFrame(frame);
   }
+
+  window.addEventListener("scroll", () => paint(performance.now()), { passive: true });
 
   function closeMenu() {
     menu.classList.remove("is-open");

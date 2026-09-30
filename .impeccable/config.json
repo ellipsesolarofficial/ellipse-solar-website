@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-09-30T18:03:21.785Z",
+        "reason": "Brand type scale is intentional: display headlines at 64–113px against 18px body. The blocked edit only updates a script cache query."
+      }
+    ]
+  }
+}

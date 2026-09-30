@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=photon">
+  <link rel="stylesheet" href="css/style.css?v=film2">
 </head>
 <body>
   <a class="skip" href="#origin">Skip to content</a>
@@ -29,7 +29,7 @@
       <span></span><span></span>
     </button>
     <nav class="nav__links" id="nav-menu">
-      <a href="#property">Solutions</a>
+      <a href="#home">Solutions</a>
       <a href="#projects">Projects</a>
       <a href="#why">About</a>
       <a href="#contact">Contact</a>
@@ -38,94 +38,55 @@
   </header>
 
   <main>
-    <section class="chapter chapter--origin chapter--center" id="origin" data-scene="origin">
-      <div class="copy">
-        <h1>Power with<br>purpose</h1>
-        <p class="lede">End-to-end solar solutions engineered for homes, businesses and a more energy-independent future.</p>
-        <div class="actions">
-          <a class="btn btn--fill" href="#capture">Explore solar</a>
-          <a class="btn btn--ghost" href="#contact">Get a solar consultation</a>
+    <section class="film" id="film">
+      <div id="origin" class="film__mark" style="top:0"></div>
+      <div id="panel" class="film__mark" style="top:22%"></div>
+      <div id="home" class="film__mark" style="top:46%"></div>
+      <div id="grid" class="film__mark" style="top:70%"></div>
+      <div class="film__stage">
+        <div class="beat beat--center" data-start="0" data-end="0.16">
+          <h1>Power with<br>purpose</h1>
+          <p class="lede">Turning sunlight into smarter energy.</p>
+          <div class="actions">
+            <a class="btn btn--fill" href="#panel">Explore solar</a>
+            <a class="btn btn--ghost" href="#contact">Get a solar consultation</a>
+          </div>
         </div>
-      </div>
-    </section>
-
-    <section class="chapter" id="capture" data-scene="capture">
-      <div class="copy">
-        <p class="label">01 — Capture</p>
-        <h2>It starts with light.</h2>
-        <p class="lede">Every day, enormous amounts of solar energy reach your rooftop. Ellipse Solar designs systems engineered to capture that energy efficiently.</p>
-      </div>
-    </section>
-
-    <section class="chapter chapter--panel" id="panel" data-scene="panel">
-      <div class="copy">
-        <p class="label">Array</p>
-        <h2>From light to current.</h2>
-        <p class="lede">The array resolves as the photons arrive. Each cell answers with a small electrical pulse.</p>
-        <ol class="flow" id="panel-flow">
-          <li>Sunlight</li>
-          <li>PV cells</li>
-          <li>DC energy</li>
-        </ol>
-      </div>
-    </section>
-
-    <section class="chapter" id="generate" data-scene="generate">
-      <div class="copy">
-        <p class="label">Generation</p>
-        <h2>Light becomes electricity.</h2>
-        <p class="lede">Photovoltaic cells convert incoming light into direct current. The array is designed around the roof, the shade, and the way the property actually uses energy.</p>
-        <ul class="metrics">
-          <li>High-efficiency solar modules</li>
-          <li>25+ year performance life</li>
-          <li>Engineered system design</li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="chapter" id="convert" data-scene="convert">
-      <div class="copy">
-        <p class="label">02 — Convert</p>
-        <h2>Power, intelligently converted.</h2>
-        <p class="lede">Direct current from the modules passes through the inverter and leaves as alternating current — the form of electricity the property already runs on.</p>
-        <p class="chain" id="convert-chain">
-          <span>DC power</span>
-          <span aria-hidden="true">→</span>
-          <span>Inverter</span>
-          <span aria-hidden="true">→</span>
-          <span>AC power</span>
-        </p>
-      </div>
-    </section>
-
-    <section class="chapter" id="property" data-scene="property">
-      <div class="copy">
-        <p class="label">Property</p>
-        <h2>Your property. Powered differently.</h2>
-        <p class="lede">Ellipse Solar designs and installs complete solar systems tailored around actual energy requirements — from residential rooftops to commercial installations. On-grid, off-grid, and hybrid, from 3 kW to 50 kW.</p>
-        <ul class="service-line" id="services">
-          <li>Solar solutions</li>
-          <li>Installation</li>
-          <li>Consultation</li>
-          <li>Maintenance</li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="chapter" id="grid" data-scene="grid">
-      <div class="copy">
-        <p class="label">03 — Connect</p>
-        <h2>Generate. Consume. Export.</h2>
-        <p class="lede">Daylight covers the property first. Surplus can move out to the grid. The connection stays in place when generation falls.</p>
-        <p class="chain chain--balance" id="grid-chain">
-          <span>Sun</span>
-          <span aria-hidden="true">→</span>
-          <span>Solar</span>
-          <span aria-hidden="true">→</span>
-          <span>Property</span>
-          <span aria-hidden="true">↔</span>
-          <span>Grid</span>
-        </p>
+        <div class="beat" data-start="0.18" data-end="0.40">
+          <h2>Capture the power of sunlight.</h2>
+          <p class="lede">High-performance solar systems designed around your actual energy requirements.</p>
+        </div>
+        <div class="beat" data-start="0.36" data-end="0.50">
+          <p class="label">DC power generated</p>
+        </div>
+        <div class="beat" data-start="0.48" data-end="0.74">
+          <h2>Sunlight. Now powering your home.</h2>
+          <p class="lede">Generate your own electricity and reduce your dependence on the grid.</p>
+          <ul class="service-line" id="services">
+            <li class="is-hot">Solar solutions</li>
+            <li class="is-hot">Installation</li>
+            <li class="is-hot">Consultation</li>
+            <li class="is-hot">Maintenance</li>
+          </ul>
+        </div>
+        <div class="meter" id="meter" data-start="0.50" data-end="0.82">
+          <p class="label">Monthly electricity bill</p>
+          <p class="meter__value" id="meter-value" aria-live="polite">₹8,450</p>
+          <p class="lede meter__line">Imagine producing as much energy as you consume.</p>
+          <p class="fine">Illustrative example. Actual savings depend on system size, consumption, tariff, generation and applicable net-metering rules.</p>
+        </div>
+        <div class="beat" data-start="0.74" data-end="1">
+          <h2>Use what you need. Send the rest forward.</h2>
+          <p class="chain" id="grid-chain">
+            <span class="is-hot">Sun</span>
+            <span aria-hidden="true">↓</span>
+            <span class="is-hot">Solar panels</span>
+            <span aria-hidden="true">↓</span>
+            <span class="is-hot">Home</span>
+            <span aria-hidden="true">↔</span>
+            <span class="is-hot">Grid</span>
+          </p>
+        </div>
       </div>
     </section>
 
@@ -268,7 +229,7 @@
     </a>
     <p class="footer__services">Solar solutions · Installation · Consultation · Maintenance</p>
     <nav class="footer__nav" aria-label="Footer">
-      <a href="#property">Solutions</a>
+      <a href="#home">Solutions</a>
       <a href="#projects">Projects</a>
       <a href="#process">Process</a>
       <a href="#why">About</a>
@@ -286,6 +247,6 @@
     </div>
   </footer>
 
-  <script src="js/main.js?v=photon"></script>
+  <script src="js/main.js?v=film5"></script>
 </body>
 </html>
